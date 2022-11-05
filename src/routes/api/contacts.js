@@ -10,7 +10,7 @@ const {
   removeContact,
   addContact,
   updateContact,
-} = require('../../models/contacts')
+} = require('../../controllers/contactsController')
 
 
 router.get('/', listContacts)
