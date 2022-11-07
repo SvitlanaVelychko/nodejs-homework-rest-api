@@ -14,6 +14,7 @@ module.exports = {
                 .min(5)
                 .max(15)
                 .required(),
+            favorite: Joi.boolean(),
         })
 
         const validationResult = schema.validate(req.body)
@@ -35,6 +36,7 @@ module.exports = {
                 .min(5)
                 .max(15)
                 .optional(),
+            favorite: Joi.boolean(),
         }).min(1)
 
         const validationResult = schema.validate(req.body)
