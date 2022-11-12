@@ -1,10 +1,20 @@
 const { Contact } = require("../models/contactModel")
 const { createNotFoundError } =  require("../helpers")
 
-const listContacts = async(req, res, next) => {
-    const contacts = await Contact.find()
+const listContacts = async (page, limit, favorite) => {
+    const filterByFavorite = favorite === null ? {} : {favorite}
+    const contacts = await Contact.find(filterByFavorite)
+        .limit(limit * 1)
+        .skip((page - 1) * limit)
+        .exec()
+    
+    const counter = await Contact.countDocuments()
 
-    return res.status(200).json(contacts)
+    return {
+        contacts,
+        totalPages: Math.ceil(counter / limit),
+        currentPage: page,
+    }
 }
 
 const getContactById = async (req, res, next) => {
