@@ -28,22 +28,34 @@ const register = async(req, res, next) => {
 const login= async(req, res, next) => {
     const { email, password } = req.body
     const user = await User.findOne({ email })
-    const isPasswordValid = await bcrypt.compare(password, user.password)
     
-    if (!user || !isPasswordValid) {
+    if (!user) {
+        return res.status(401).json({"message": "Email or password is wrong"})
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password)
+    if (!isPasswordValid) {
         return res.status(401).json({"message": "Email or password is wrong"})
     }
 
     const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET , { expiresIn: "1h" })
     user.token = token
     await User.findByIdAndUpdate(user._id, user)
-    return res.status(200).json(token)
+    return res.status(200).json({
+        data: {
+            token,
+            user: {
+                email,
+                subscription: user.subscription,
+            }
+        },
+    })
 }
 
 const logout = async (req, res, next) => {
     const { user } = req
     user.token = null
-    await User.findByIdAndUpdate(user._id, user)
+    await User.findByIdAndUpdate(user._id, user , {new: true} )
 
     return res.status(204).json({})
 }
@@ -51,16 +63,26 @@ const logout = async (req, res, next) => {
 const getCurrentUser = async (req, res, next) => {
     const { email, subscription } = req.user
 
-    res.status(200).json({ email, subscription })
+    res.status(200).json({ 
+        data: {
+            user: {
+                email,
+                subscription
+            },
+        },
+    })
 }
 
 const updateUserSubscription = async (req, res, next) => {
     const { subscription } = req.body
     const { _id } = req.user
+    const updatedUser = await User.findByIdAndUpdate(_id, { subscription }, { new: true })
     
-    const updatedUser = await User.findByIdAndUpdate({ _id }, { subscription }, { new: true })
-    
-    return res.status(200).json(updatedUser)
+    return res.status(200).json({
+        data: {
+            updatedUser,
+        }
+    })
 }
 
 module.exports = {

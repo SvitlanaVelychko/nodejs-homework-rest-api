@@ -13,13 +13,7 @@ function createNotFoundError() {
     err.status = 404
 }
 
-function NotAuthorizedError() {
-    const err = new Error("Not Authorized")
-    err.status = 401
-}
-
 module.exports = {
     tryCatchWrapper,
     createNotFoundError,
-    NotAuthorizedError,
 }

@@ -8,12 +8,13 @@ const {
     getCurrentUser,
     updateUserSubscription,
 } = require('../../controllers/authController')
-const { authMiddleware } = require('../../middlewares/authMiddleware')
+const { registerUserValidation, loginUserValidation, } = require("../../middlewares/userValidationMiddleware")
+const { auth } = require('../../middlewares/auth')
 
-authRouter.post('/register', tryCatchWrapper(register))
-authRouter.post('/login', tryCatchWrapper(login))
-authRouter.post('/logout', authMiddleware, tryCatchWrapper(logout))
-authRouter.get('/current', authMiddleware, tryCatchWrapper(getCurrentUser))
-authRouter.patch('/subscription',authMiddleware, tryCatchWrapper(updateUserSubscription))
+authRouter.post('/register', registerUserValidation, tryCatchWrapper(register))
+authRouter.post('/login', loginUserValidation, tryCatchWrapper(login))
+authRouter.post('/logout', auth, tryCatchWrapper(logout))
+authRouter.get('/current', auth, tryCatchWrapper(getCurrentUser))
+authRouter.patch('/subscription',auth, tryCatchWrapper(updateUserSubscription))
 
 module.exports = authRouter
