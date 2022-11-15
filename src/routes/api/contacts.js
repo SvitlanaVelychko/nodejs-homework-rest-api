@@ -3,7 +3,7 @@ const router = express.Router()
 const  { tryCatchWrapper } = require("../../helpers")
 const {
   addContactValidation,
-  updateContactValidation
+  updateContactValidation,
 } = require('../../middlewares/validationMiddleware')
 const {
   listContacts,
@@ -13,18 +13,18 @@ const {
   updateContact,
   updateStatusContact,
 } = require('../../controllers/contactsController')
+const { auth } = require("../../middlewares/auth")
 
+router.get('/', auth, tryCatchWrapper(listContacts))
 
-router.get('/', tryCatchWrapper(listContacts))
+router.get('/:contactId', auth, tryCatchWrapper(getContactById))
 
-router.get('/:contactId', tryCatchWrapper(getContactById))
+router.post('/', auth, addContactValidation, tryCatchWrapper(addContact))
 
-router.post('/',addContactValidation, tryCatchWrapper(addContact))
+router.delete('/:contactId', auth, tryCatchWrapper(removeContact))
 
-router.delete('/:contactId', tryCatchWrapper(removeContact))
+router.put('/:contactId', auth, updateContactValidation, tryCatchWrapper(updateContact))
 
-router.put('/:contactId', updateContactValidation, tryCatchWrapper(updateContact))
-
-router.patch('/:contactId/favorite', tryCatchWrapper(updateStatusContact))
+router.patch('/:contactId/favorite', auth, tryCatchWrapper(updateStatusContact))
 
 module.exports = router

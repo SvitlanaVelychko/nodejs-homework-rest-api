@@ -1,7 +1,7 @@
-function tryCatchWrapper(endpoindFn) {
+function tryCatchWrapper(endpointFn) {
     return async (req, res, next) => {
         try {
-            await endpoindFn(req, res, next)
+            await endpointFn(req, res, next)
         } catch (error) {
             next(error)
         }
