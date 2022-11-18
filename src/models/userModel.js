@@ -20,7 +20,10 @@ const userSchema = new Schema(
         token: {
             type: String,
             default: null,
-        }
+        },
+        avatarUrl: {
+            type: String,
+        },
     },
     { versionKey: false }
 )

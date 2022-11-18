@@ -1,16 +1,23 @@
 const { User } = require('../models/userModel')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+const path = require("path")
+const fs = require("fs/promises")
+const gravatar = require("gravatar")
+const { nanoid } = require("nanoid")
+const Jimp = require("jimp")
 
-const register = async(req, res, next) => {
+
+const register = async (req, res, next) => {
     const { email, password } = req.body
+    const avatarUrl = gravatar.url(email,  {s: '100', r: 'x', d: 'retro'}, true)
     const existingUser = await User.findOne({ email })
     if (existingUser) {
         return res.status(409).json({"message": "Email in use"})
     }
     
     try {
-        const user = new User({ email, password })
+        const user = new User({ email, password, avatarUrl })
         await user.save()
         return res.status(201).json({
             data: {
@@ -85,10 +92,31 @@ const updateUserSubscription = async (req, res, next) => {
     })
 }
 
+const updateUserAvatar = async (req, res, next) => {
+    const { path: tmpFilePath, originalname } = req.file
+    const { _id } = req.user
+    const avatarsDir = path.join(__dirname, "public", "avatars")
+    const newFileName = nanoid() + path.extname(originalname)
+    const newFilePath = path.join(avatarsDir, originalname)
+    try {
+        const file = await Jimp.read(tmpFilePath)
+        file.resize(250, 250).write(tmpFilePath)
+        await fs.rename(tmpFilePath, newFilePath)
+        const avatarUrl = path.join("public", "avatars", newFileName)
+
+        const updatedAvatar = await User.findByIdAndUpdate(_id, { avatarUrl }, {new: true})
+        return res.status(200).json(updatedAvatar)
+    } catch (error) {
+        await fs.unlink(tmpFilePath)
+        next(error.message)
+    }
+}
+
 module.exports = {
     register,
     login,
     logout,
     getCurrentUser,
     updateUserSubscription,
+    updateUserAvatar,
 }
