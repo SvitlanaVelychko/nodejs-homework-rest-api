@@ -7,7 +7,6 @@ const gravatar = require("gravatar")
 const { nanoid } = require("nanoid")
 const Jimp = require("jimp")
 
-
 const register = async (req, res, next) => {
     const { email, password } = req.body
     const avatarUrl = gravatar.url(email,  {s: '100', r: 'x', d: 'retro'}, true)
@@ -24,6 +23,7 @@ const register = async (req, res, next) => {
                 user: {
                     email,
                     subscription: user.subscription,
+                    avatarUrl,
                 },
             },
         })
@@ -95,8 +95,8 @@ const updateUserSubscription = async (req, res, next) => {
 const updateUserAvatar = async (req, res, next) => {
     const { path: tmpFilePath, originalname } = req.file
     const { _id } = req.user
-    const avatarsDir = path.join(__dirname, "public", "avatars")
-    const newFileName = nanoid() + path.extname(originalname)
+    const avatarsDir = path.join(__dirname, "../../", "public", "avatars")
+    const newFileName = nanoid() + `_${ originalname }`
     const newFilePath = path.join(avatarsDir, originalname)
     try {
         const file = await Jimp.read(tmpFilePath)
@@ -104,8 +104,8 @@ const updateUserAvatar = async (req, res, next) => {
         await fs.rename(tmpFilePath, newFilePath)
         const avatarUrl = path.join("public", "avatars", newFileName)
 
-        const updatedAvatar = await User.findByIdAndUpdate(_id, { avatarUrl }, {new: true})
-        return res.status(200).json(updatedAvatar)
+        await User.findByIdAndUpdate(_id, { avatarUrl })
+        return res.status(200).json({ avatarUrl })
     } catch (error) {
         await fs.unlink(tmpFilePath)
         next(error.message)
