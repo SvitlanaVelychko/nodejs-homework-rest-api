@@ -153,25 +153,29 @@ const verifyUser = async (req, res) => {
 
     const user = await User.findOne({ email })
 
-    if (!user.verify) {
-        const msg = {
+    if (!user) {
+        throw createNotFoundError()
+    }
+
+    if (user.verify) {
+        return res.status(400).json({
+            "message":"Verification has already been passed",
+        })
+    }
+    
+    const msg = {
         to: email,
         subject: "Verification email",
         text: `Hello dear user. Please click at http://localhost:3000/api/users/verify/${user.verificationToken} to verify your email`,
         html: `<b>Hello dear user</b><br>
             <a href="http://localhost:3000/api/users/verify/${user.verificationToken}">Please confirm your email</a>`
-        }
-
-        await sendEmail(msg)
-        res.status(200).json({
-            "message": "Verification email sent",
-        })
     }
-    res.status(400).json({
-        "message":"Verification has already been passed",
+
+    await sendEmail(msg)
+    res.status(200).json({
+        "message": "Verification email sent",
     })
 }
-
 
 module.exports = {
     register,
