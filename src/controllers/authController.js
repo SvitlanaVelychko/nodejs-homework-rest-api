@@ -135,13 +135,13 @@ const verifyEmail = async (req, res, next) => {
     const { verificationToken } = req.params
     const user = await User.findOne({ verificationToken })
 
-    if (user) {
-        await User.findByIdAndUpdate(user._id, { verify: true, verificationToken: null }, { new: true })
-        res.status(200).json({
-            message: 'Verification successful',
-        })
+    if (!user) {
+        throw createNotFoundError()
     }
-    return next(createNotFoundError())
+    await User.findByIdAndUpdate(user._id, { verify: true, verificationToken: null }, { new: true })
+    res.status(200).json({
+        message: 'Verification successful',
+    })
 }
 
 const verifyUser = async (req, res) => {
@@ -167,7 +167,7 @@ const verifyUser = async (req, res) => {
             "message": "Verification email sent",
         })
     }
-    return res.status(400).json({
+    res.status(400).json({
         "message":"Verification has already been passed",
     })
 }
